@@ -26,11 +26,13 @@ func VerifyToken(c *gin.Context) (interface{}, error){
 	errResponse := errors.New("please sigint to process")
 	headerToken := c.Request.Header.Get("Authorization")
 	bearer := strings.HasPrefix(headerToken, "Bearer")
-
+	// Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+	// Authorization: Basic username:password
 	if !bearer {
 		return nil, errResponse
 	}
-	// Authorization: Bearer xxxxxxxxx
+
+	// ["Bearer","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"]
 	stringToken := strings.Split(headerToken," ")[1]
 
 	// verify process
@@ -41,7 +43,11 @@ func VerifyToken(c *gin.Context) (interface{}, error){
 		return []byte(secret), nil
 	})
 
-	if _, ok := token.Claims.(jwt.MapClaims); !ok && !token.Valid {
+	if _, ok := token.Claims.(jwt.MapClaims); !ok {
+		return nil, errResponse
+	}
+
+	if !token.Valid {
 		return nil, errResponse
 	}
 
